@@ -218,25 +218,29 @@
   document.getElementById("favClose").addEventListener("click", closeTray);
   tray.addEventListener("click", function (e) { if (e.target === tray) closeTray(); });
 
+  var SEND_TO = window.FAV_EMAIL_TO || "noahgallagher48@gmail.com";
+  window.__buildFavMailto = function (name, email, favList) {
+    var lines = [];
+    lines.push("Name: " + name);
+    if (email) lines.push("Email: " + email);
+    lines.push("");
+    lines.push("Favorites (" + favList.length + "):");
+    favList.forEach(function (f) { lines.push("- " + f); });
+    var subject = "Ramah in the Rockies — favorites from " + (name || "a viewer");
+    return "mailto:" + SEND_TO +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(lines.join("\n"));
+  };
+
   var sendBtn = document.getElementById("favSend");
   sendBtn.addEventListener("click", function () {
     var name = document.getElementById("favName").value.trim();
     var email = document.getElementById("favEmailInput").value.trim();
     if (!name) { setStatus("Please add your name.", "err"); return; }
     if (favs.size === 0) { setStatus("No favorites selected.", "err"); return; }
-    var payload = { name: name, email: email, favorites: Array.from(favs), ts: new Date().toISOString() };
-    if (!window.FAV_ENDPOINT) { setStatus("Saved locally. (Sending is not configured yet.)", "ok"); return; }
-    sendBtn.disabled = true; setStatus("Sending...", "");
-    fetch(window.FAV_ENDPOINT, {
-      method: "POST",
-      // text/plain keeps it a "simple request" (no CORS preflight) for Apps Script
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload)
-    }).then(function () {
-      setStatus("Thank you, " + name + ". Your favorites were sent.", "ok");
-    }).catch(function () {
-      setStatus("Sent. (If you do not hear back, email Noah directly.)", "ok");
-    }).finally(function () { sendBtn.disabled = false; });
+    var href = window.__buildFavMailto(name, email, Array.from(favs));
+    window.location.href = href;
+    setStatus("Opening your email to send " + favs.size + " favorite(s) to Noah. Press send in your mail app.", "ok");
   });
   function setStatus(msg, cls) { statusEl.textContent = msg; statusEl.className = "fav-status" + (cls ? " " + cls : ""); }
 

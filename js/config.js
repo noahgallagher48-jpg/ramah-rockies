@@ -1,4 +1,3 @@
-// Favorites collection endpoint (Google Apps Script web app URL).
-// Set this to the deployed Apps Script /exec URL. Leave "" to disable sending
-// (favorites still work locally; the Send button shows a not-configured notice).
-window.FAV_ENDPOINT = "";
+// No-setup favorites: the Send button opens the viewer's email app pre-addressed
+// to FAV_EMAIL_TO with their name and picks. Nothing to deploy.
+window.FAV_EMAIL_TO = "noahgallagher48@gmail.com";
